@@ -1,0 +1,6 @@
+flask==1.1.1
+jinja2==2.10.1
+Markupsafe==2.0.1
+Itsdangerous==2.0.1
+flask-debugtoolbar==0.11.0
+werkzeug==1.0.1
