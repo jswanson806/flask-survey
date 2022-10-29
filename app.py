@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, redirect, flash
+from http.client import responses
+from flask import Flask, request, render_template, redirect, flash, session
 from surveys import satisfaction_survey
 from flask_debugtoolbar import DebugToolbarExtension
 app = Flask(__name__)
@@ -7,24 +8,26 @@ app.config['SECRET_KEY'] = "darkphoenix"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 debug = DebugToolbarExtension(app)
 
-# list to store answers from users
-responses = []
+RESPONSES_KEY = "responses"
 
 # root route to show start page
 @app.route('/')
 def start_page():
+    """Show survey instructions"""
     instructions = satisfaction_survey.instructions
     return render_template('start.html', instructions=instructions)
 
-# route to begin the survey
-@app.route('/begin')
-def begin():
+@app.route('/start', methods=["POST"])
+def set_responses():
+    """Clear the session of survey answers"""
+    session[RESPONSES_KEY] = []
     return redirect('/questions/0')
 
 # route to handle questions
 @app.route('/questions/<int:question>')
 def question_page(question):
-    
+    """Display the current question"""
+    responses = session.get(RESPONSES_KEY)
 
     if responses is None:
         return redirect('/')
@@ -45,9 +48,18 @@ def question_page(question):
 #  route to handle answers
 @app.route('/answer', methods=["POST"])
 def add_answers():
-    response = request.form['answer']
-    responses.append(response)
+    """Add answers to the session and go to next question"""
+    # get the response choice
+    answer = request.form['answer']
+
+    # add response to the session
+    responses = session[RESPONSES_KEY]
+    responses.append(answer)
+    session[RESPONSES_KEY] = responses
+    
     if len(responses) == len(satisfaction_survey.questions):
+        # all questions have been answered, show /gratitude
+        print(responses)
         return redirect('/gratitude')
     else:
         return redirect(f'/questions/{len(responses)}')

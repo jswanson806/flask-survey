@@ -7,7 +7,7 @@
     
         {{questions}} <br>
         {% for choice in choices %}
-            <input type="radio" name="answer">{{choice}} <br>
+            <input type="radio" name="answer" value="{{choice}}">{{choice}} <br>
         {% endfor %}
     
     <button>Next Question</button>
